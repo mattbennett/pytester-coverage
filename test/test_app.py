@@ -61,8 +61,7 @@ def test_via_subproc(tmpdir, testfile):
 
 
 @pytest.yield_fixture
-def testdir(request):
-    testdir = request.getfuncargvalue("testdir")
+def testdir(testdir):
     testdir.makepyfile(sitecustomize=SITECUSTOMIZE)
 
     fh = testdir.tmpdir.join(".coveragerc")
