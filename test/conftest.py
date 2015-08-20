@@ -1,4 +1,5 @@
 import os
+import uuid
 
 import pytest
 
@@ -19,5 +20,6 @@ def testdir(testdir):
 
     yield testdir
 
-    dst = os.path.join(testdir._olddir.strpath, '.coverage.captured')
+    ident = uuid.uuid4()
+    dst = os.path.join(testdir._olddir.strpath, '.coverage.{}'.format(ident))
     os.rename(os.path.join(testdir.tmpdir.strpath, '.coverage'), dst)
