@@ -60,19 +60,24 @@ def test_via_subproc(tmpdir, testfile):
     proc.wait()
 
 
-@pytest.mark.pytest
-def test_via_pytest(testdir):
-
+@pytest.yield_fixture
+def testdir(request):
+    testdir = request.getfuncargvalue("testdir")
     testdir.makepyfile(sitecustomize=SITECUSTOMIZE)
-    testdir.makepyfile(TEST)
 
     fh = testdir.tmpdir.join(".coveragerc")
     fh.write(COVERAGERC)
 
-    result = testdir.runpytest()
+    yield testdir
 
     dst = os.path.join(testdir._olddir.strpath, '.coverage.captured')
     os.rename(os.path.join(testdir.tmpdir.strpath, '.coverage'), dst)
 
-    assert result.ret == 0
 
+@pytest.mark.pytest
+def test_via_pytest(testdir):
+
+    testdir.makepyfile(TEST)
+    result = testdir.runpytest()
+
+    assert result.ret == 0
