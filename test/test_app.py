@@ -60,7 +60,7 @@ def test_via_subproc(tmpdir, testfile):
     proc.wait()
 
 
-@pytest.mark.experiment
+@pytest.mark.pytest
 def test_via_pytest(testdir):
 
     testdir.makepyfile(sitecustomize=SITECUSTOMIZE)
@@ -69,7 +69,6 @@ def test_via_pytest(testdir):
     fh = testdir.tmpdir.join(".coveragerc")
     fh.write(COVERAGERC)
 
-    os.environ['PYTHONPATH'] = testdir.tmpdir.strpath
     result = testdir.runpytest()
 
     dst = os.path.join(testdir._olddir.strpath, '.coverage.captured')
