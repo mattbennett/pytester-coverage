@@ -3,15 +3,8 @@ import os
 import pytest
 
 
-@pytest.fixture
-def coveragerc():
-    project_root = os.path.join(os.path.dirname(__file__), os.path.pardir)
-    with open(os.path.join(project_root, '.coveragerc')) as rc:
-        return rc.read()
-
-
 @pytest.yield_fixture
-def testdir(testdir, coveragerc):
+def testdir(testdir):
 
     os.environ['COVERAGE_PROCESS_START'] = ".coveragerc"
 
@@ -20,7 +13,9 @@ def testdir(testdir, coveragerc):
     """)
 
     fh = testdir.tmpdir.join(".coveragerc")
-    fh.write(coveragerc)
+    project_root = os.path.join(os.path.dirname(__file__), os.path.pardir)
+    with open(os.path.join(project_root, '.coveragerc')) as rc:
+        fh.write(rc.read())
 
     yield testdir
 
