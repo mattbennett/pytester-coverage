@@ -12,27 +12,39 @@ import textwrap
 pytest_plugins = "pytester"
 
 
+SITECUSTOMIZE = "import coverage; coverage.process_startup()"
+
+COVERAGERC = """
+[run]
+branch = true
+source = app
+
+[report]
+show_missing = true
+"""
+
+TEST = textwrap.dedent("""
+    from app.impl import foo, bar
+
+    def test_foo():
+        assert foo() == "foo"
+
+    def test_bar():
+        assert bar() == "bar"
+    """)
+
+
 @pytest.fixture
 def sitecustomize(tmpdir):
     fh = tmpdir.join("sitecustomize.py")
-    fh.write("import coverage; coverage.process_startup()")
+    fh.write(SITECUSTOMIZE)
     return fh
 
 
 @pytest.fixture
 def testfile(tmpdir, sitecustomize):
-
-    src = textwrap.dedent("""
-        from app.impl import foo, bar
-
-        def test_foo():
-            assert foo() == "foo"
-
-        def test_bar():
-            assert bar() == "bar"
-        """)
     fh = tmpdir.join("subproc_test_app.py")
-    fh.write(src)
+    fh.write(TEST)
     return fh
 
 
@@ -40,10 +52,28 @@ def test_baz():
     assert baz() == "baz"
 
 
-#@pytest.mark.usefixtures('testdir')
+@pytest.mark.subproc
 def test_via_subproc(tmpdir, testfile):
     import os
     os.environ['PYTHONPATH'] = tmpdir.strpath
     proc = subprocess.Popen(["py.test", testfile.strpath, "-v"])
     proc.wait()
+
+
+@pytest.mark.experiment
+def test_via_pytest(testdir):
+
+    testdir.makepyfile(sitecustomize=SITECUSTOMIZE)
+    testdir.makepyfile(TEST)
+
+    fh = testdir.tmpdir.join(".coveragerc")
+    fh.write(COVERAGERC)
+
+    os.environ['PYTHONPATH'] = testdir.tmpdir.strpath
+    result = testdir.runpytest()
+
+    dst = os.path.join(testdir._olddir.strpath, '.coverage.captured')
+    os.rename(os.path.join(testdir.tmpdir.strpath, '.coverage'), dst)
+
+    assert result.ret == 0
 
