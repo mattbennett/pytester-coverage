@@ -1,10 +1,9 @@
 import os
-import uuid
 
 import pytest
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def testdir(testdir):
 
     rc_path = os.path.join(
@@ -16,8 +15,4 @@ def testdir(testdir):
         import coverage; coverage.process_startup()
     """)
 
-    yield testdir
-
-    ident = uuid.uuid4()
-    dst = os.path.join(testdir._olddir.strpath, '.coverage.{}'.format(ident))
-    os.rename(os.path.join(testdir.tmpdir.strpath, '.coverage'), dst)
+    return testdir

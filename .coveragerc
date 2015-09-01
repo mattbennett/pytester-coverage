@@ -1,6 +1,8 @@
 [run]
 branch = true
 source = app
+parallel = true
+data_file = /tmp/foo/.coverage
 
 [report]
 show_missing = true
